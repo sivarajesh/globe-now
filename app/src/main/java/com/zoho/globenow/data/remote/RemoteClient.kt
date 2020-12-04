@@ -20,7 +20,7 @@ internal object RemoteClient {
                     .addInterceptor(interceptor)
                     .build()
             return Retrofit.Builder()
-                    .baseUrl("https://restcountries.eu/")
+                    .baseUrl("https://restcountries.eu")
                     .addConverterFactory(GsonConverterFactory.create())
                     .client(client)
                     .build()

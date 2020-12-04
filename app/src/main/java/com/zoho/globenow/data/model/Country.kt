@@ -2,6 +2,7 @@ package com.zoho.globenow.data.model
 
 
 import com.google.gson.annotations.SerializedName
+import com.zoho.globenow.data.local.entity.CountryEntity
 
 data class Country(
     @SerializedName("alpha2Code")
@@ -52,4 +53,8 @@ data class Country(
     val topLevelDomain: List<String> = listOf(),
     @SerializedName("translations")
     val translations: Translations = Translations()
-)
+) {
+    fun toCountryEntity(): CountryEntity {
+        return CountryEntity(0, name, area, population, flag)
+    }
+}
