@@ -1,4 +1,4 @@
-package com.zoho.globenow.data.model
+package com.zoho.globenow.data.model.country
 
 
 import com.google.gson.annotations.SerializedName

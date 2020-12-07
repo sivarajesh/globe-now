@@ -4,4 +4,9 @@
     <string name="label_search">Search</string>
     <string name="label_nomoredata">No More Data..!</string>
     <string name="content_flag">Flag</string>
+    <string name="content_weather">Weather Status</string>
+    <string name="no_data_label">No data available</string>
+    <string name="network_issue">Network issue. Please check your connection</string>
+    <string name="location_permission_alert">To allow location permission to get current weather data. goto location setting and give permission</string>
+    <string name="alert_msg_location">You should allow to use location service to get weather data</string>
 </resources>

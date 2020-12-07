@@ -6,6 +6,10 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        dev {
+        }
+    }
     compileSdkVersion 30
     buildToolsVersion "29.0.3"
 
@@ -23,6 +27,9 @@ android {
                 arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
             }
         }
+        buildConfigField("String", "WEATHER_API_KEY", WEATHER_API_KEY)
+        buildConfigField("String", "WEATHER_API_URL", WEATHER_API_URL)
+        buildConfigField("String", "COUNTRY_API_BASE_URL", COUNTRY_API_BASE_URL)
     }
 
     buildFeatures {
@@ -30,8 +37,21 @@ android {
     }
 
     buildTypes {
+        dev {
+            debuggable true
+            minifyEnabled true
+            shrinkResources true
+            multiDexEnabled true
+            multiDexKeepProguard file('proguard-rules.pro')
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
         release {
-            minifyEnabled false
+            debuggable false
+            minifyEnabled true
+            shrinkResources true
+            multiDexEnabled true
+            multiDexKeepProguard file('proguard-rules.pro')
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -97,6 +117,10 @@ dependencies {
 
     // Fragment Ktx
     implementation "androidx.fragment:fragment-ktx:1.2.5"
+
+//    To Access Location for weather
+    implementation "com.google.android.gms:play-services-location:17.1.0"
+
 
     testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
