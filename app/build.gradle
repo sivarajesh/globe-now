@@ -36,6 +36,15 @@ android {
         viewBinding = true
     }
 
+    signingConfigs {
+        config {
+            keyAlias 'globenow'
+            keyPassword 'AvisSiva'
+            storeFile file('../../keystore/keystore')
+            storePassword 'AvisSiva'
+        }
+    }
+
     buildTypes {
         dev {
             debuggable true
@@ -53,6 +62,7 @@ android {
             multiDexEnabled true
             multiDexKeepProguard file('proguard-rules.pro')
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
     compileOptions {
