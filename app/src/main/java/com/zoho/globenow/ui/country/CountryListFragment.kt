@@ -219,7 +219,7 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
             if (!grantResults.contains(PackageManager.PERMISSION_DENIED))
                 invokeLocationAction()
             else {
-                if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
                     showPermissionAlert(true)
                 } else
                     showPermissionAlert(false)
@@ -244,7 +244,7 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
                 .setMessage(getString(R.string.alert_msg_location))
                 .setPositiveButton("Ok") { dialogInterface, i ->
                     requestPermissions(
-                        arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                         Companion.REQUEST_CODE_LOCATION_PERMISSION
                     )
                     dialogInterface.dismiss()
@@ -267,7 +267,7 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
                 false
             )
             else -> if (!((requireActivity().application) as GlobeApplication).isLocationPermissionDeniedForThisSession) requestPermissions(
-                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_CODE_LOCATION_PERMISSION
             )
         }
@@ -314,12 +314,12 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
     private fun isLocationPermissionsGranted() =
         checkSelfPermission(
             requireContext(),
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
     private fun shouldShowRequestPermissionRationale() =
         shouldShowRequestPermissionRationale(
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION
         )
 
     companion object {
