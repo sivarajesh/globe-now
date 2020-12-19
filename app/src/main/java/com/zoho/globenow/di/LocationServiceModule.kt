@@ -25,9 +25,10 @@ class LocationServiceModule {
     @Provides
     fun provideLocationRequest(): LocationRequest {
         return LocationRequest.create()?.apply {
-            interval = 10000
+            interval = 5000
             fastestInterval = 5000
             priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+            maxWaitTime = 5000
         }!!
     }
 
