@@ -1,5 +1,6 @@
 package com.zoho.globenow.ui.country
 
+import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -18,28 +19,31 @@ class CountryViewModel @ViewModelInject constructor(private val countryRepo: Cou
     ViewModel() {
 
     val countries: LiveData<List<CountryEntity>> = countryRepo.getCountries()
+    val filteredCountries: LiveData<List<CountryEntity>> = MutableLiveData()
     private val _currentWeather = MutableLiveData<Weather>()
     val currentWeather: LiveData<Weather>
-    get() {
-        return _currentWeather
-    }
-
+        get() {
+            return _currentWeather
+        }
 
     init {
         fetchCountries()
     }
 
+    val isCountryListVisible = MutableLiveData(false)
+
     fun fetchCurrentWeather(locationModel: LocationModel) {
         viewModelScope.launch {
             countryRepo.fetchWeatherReport(locationModel).collect {
                 _currentWeather.value = it
+                setCurrentLocation()
             }
         }
     }
 
-    fun getWeatherIcon(weather: Weather): Int {
+    private fun getWeatherIcon(weather: Weather): Int {
         if (!weather.weather.isNullOrEmpty()) {
-            return when(weather.weather.first().main) {
+            return when (weather.weather.first().main) {
                 WeatherCondition.Thunderstorm.name -> R.drawable.ic_thunder_storm
                 WeatherCondition.Clear.name -> R.drawable.ic_clear
                 WeatherCondition.Clouds.name -> R.drawable.ic_cloud
@@ -52,9 +56,36 @@ class CountryViewModel @ViewModelInject constructor(private val countryRepo: Cou
         }
         return R.drawable.ic_weather
     }
+
     private fun fetchCountries() {
         viewModelScope.launch {
             countryRepo.fetchCountries()
+            setCurrentLocation()
         }
+    }
+
+    private fun setCurrentLocation() {
+        if (!countries.value.isNullOrEmpty()) {
+            currentWeather.value?.let {
+                val country =
+                    countries.value!!.first { countryEntity -> countryEntity.countryCode == it.sys.country }
+                it.mainLocation = it.name
+                it.subLocation = country.name
+                it.countryFlagUrl = country.flag
+                it.weatherIcon = getWeatherIcon(it)
+                _currentWeather.value = it
+            }
+        }
+    }
+
+    fun applySearch(searchString: String, filteredCountries: ArrayList<CountryEntity>) {
+        filteredCountries.clear()
+        filteredCountries.addAll(countries.value!!.filter { countryEntity ->
+            countryEntity.name.startsWith(searchString, true)
+        })
+        filteredCountries.addAll(countries.value!!.filter { countryEntity ->
+            countryEntity.name.contains(" $searchString", true)
+        })
+        isCountryListVisible.value = filteredCountries.isNotEmpty()
     }
 }

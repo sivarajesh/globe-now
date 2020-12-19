@@ -7,7 +7,6 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
 import android.view.LayoutInflater
@@ -15,11 +14,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat.checkSelfPermission
-import androidx.core.widget.addTextChangedListener
+import androidx.databinding.adapters.TextViewBindingAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.activityViewModels
-import com.bumptech.glide.Glide
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
@@ -30,18 +28,15 @@ import com.zoho.globenow.data.model.LocationModel
 import com.zoho.globenow.data.model.weather.Weather
 import com.zoho.globenow.databinding.CountryListFragmentBinding
 import com.zoho.globenow.ui.countrydetail.CountryDetailFragment
-import com.zoho.globenow.util.svg.GlideUtil
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import javax.inject.Inject
-import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionListener {
 
     private var isLocationPermissionDenied: Boolean = false
     private lateinit var filteredCountries: ArrayList<CountryEntity>
-    private lateinit var countries: ArrayList<CountryEntity>
     private lateinit var adapter: CountryListAdapter
     private val viewModel: CountryViewModel by activityViewModels()
     private var isGPSEnabled = false
@@ -50,13 +45,10 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
     //    FOR LOCATION
     @Inject
     lateinit var fusedLocationClient: FusedLocationProviderClient
-
     @Inject
     lateinit var builder: LocationSettingsRequest.Builder
-
     @Inject
     lateinit var client: SettingsClient
-
     @Inject
     lateinit var locationRequest: LocationRequest
     private var requestingLocationUpdates: Boolean = false
@@ -70,73 +62,26 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
 
         binding = CountryListFragmentBinding.inflate(inflater, container, false)
         updateValuesFromBundle(savedInstanceState)
-
-        countries = arrayListOf()
-        filteredCountries = arrayListOf<CountryEntity>()
-        adapter = CountryListAdapter(requireContext(), filteredCountries, this)
-        binding.rvCountryList.adapter = adapter
+        filteredCountries = arrayListOf()
+        adapter = CountryListAdapter(filteredCountries, this)
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = viewLifecycleOwner
+        binding.countryListAdapter = adapter
+        binding.onTextChangeListioner = onTextChangeListioner
 
         viewModel.countries.observe(viewLifecycleOwner, {
-            countries.clear()
-            countries.addAll(it)
-            applySearch(binding.etSearch.text.toString().trim())
-            setCurrentLocation()
+            viewModel.applySearch(binding.etSearch.text.toString().trim(), filteredCountries)
+            adapter.notifyDataSetChanged()
         })
-
-        viewModel.currentWeather.observe(viewLifecycleOwner, {
-            binding.tvLableLocation.visibility = View.VISIBLE
-            binding.weatherLayout.root.visibility = View.VISIBLE
-            currentWeather = it
-            currentWeather?.let { weather ->
-                binding.weatherLayout.tvLocation.text = weather.name
-                if (weather.weather.isNotEmpty()) {
-                    binding.weatherLayout.tvWeatherStatus.text = weather.weather.first().main
-                }
-                val temperature = "${weather.main.temp.roundToInt()}\u00B0"
-                binding.weatherLayout.tvTemp.text = temperature
-                Glide.with(requireActivity())
-                    .load(viewModel.getWeatherIcon(weather))
-                    .into(binding.weatherLayout.ivWeather)
-                setCurrentLocation()
-            }
-        })
-
-        binding.etSearch.addTextChangedListener {
-            applySearch(it.toString())
-        }
 
         return binding.root
     }
 
-    private fun applySearch(searchString: String) {
-        filteredCountries.clear()
-        filteredCountries.addAll(countries.filter { countryEntity ->
-            countryEntity.name.startsWith(searchString, true)
-        })
-        filteredCountries.addAll(countries.filter { countryEntity ->
-            countryEntity.name.contains(" $searchString", true)
-        })
-        if (filteredCountries.isEmpty()) {
-            binding.noDataLayout.visibility = View.VISIBLE
-            binding.rvCountryList.visibility = View.GONE
-        } else {
-            binding.noDataLayout.visibility = View.GONE
-            binding.rvCountryList.visibility = View.VISIBLE
+    private val onTextChangeListioner =
+        TextViewBindingAdapter.OnTextChanged { s, _, _, _ ->
+            viewModel.applySearch(s.toString(), filteredCountries)
+            adapter.notifyDataSetChanged()
         }
-        adapter.notifyDataSetChanged()
-    }
-
-    private fun setCurrentLocation() {
-        if (!countries.isNullOrEmpty()) {
-            currentWeather?.let {
-                val country =
-                    countries.first { countryEntity -> countryEntity.countryCode == currentWeather!!.sys.country }
-                binding.weatherLayout.tvCountryName.text = country.name
-                GlideUtil.glideBuilder(requireContext()).load(Uri.parse(country.flag))
-                    .into(binding.weatherLayout.ivFlag)
-            }
-        }
-    }
 
     override fun onCountrySelected(countryEntity: CountryEntity) {
         requireActivity().supportFragmentManager.beginTransaction()
@@ -242,14 +187,14 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
         } else {
             dialog.setTitle("Location service")
                 .setMessage(getString(R.string.alert_msg_location))
-                .setPositiveButton("Ok") { dialogInterface, i ->
+                .setPositiveButton("Ok") { dialogInterface, _ ->
                     requestPermissions(
                         arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
                         Companion.REQUEST_CODE_LOCATION_PERMISSION
                     )
                     dialogInterface.dismiss()
                 }
-                .setNegativeButton("Cancel") { dialogInterface, i ->
+                .setNegativeButton("Cancel") { dialogInterface, _ ->
                     ((requireActivity().application) as GlobeApplication).isLocationPermissionDeniedForThisSession =
                         true
                     dialogInterface.dismiss()

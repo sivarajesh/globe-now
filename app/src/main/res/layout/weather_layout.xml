@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/white">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="androidx.lifecycle.LiveData" />
+        <import type="com.zoho.globenow.data.model.weather.Weather" />
+
+        <variable name="weather"
+            type="LiveData&lt;Weather>"/>
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white">
 
         <TextView
-            android:id="@+id/tvLocation"
+            android:id="@+id/tvWeatherTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
@@ -15,6 +25,7 @@
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="normal"
+            android:text="@{weather.mainLocation}"
             app:layout_constraintBottom_toBottomOf="@+id/ivFlag"
             app:layout_constraintEnd_toStartOf="@+id/ivWeather"
             app:layout_constraintStart_toEndOf="@+id/ivFlag"
@@ -28,6 +39,7 @@
             android:layout_marginTop="12dp"
             android:contentDescription="@string/content_flag"
             android:scaleType="centerInside"
+            app:imageUrl="@{weather.countryFlagUrl}"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -38,6 +50,7 @@
             android:layout_marginEnd="24dp"
             android:contentDescription="@string/content_weather"
             android:scaleType="centerInside"
+            app:imageDrawableId="@{weather.weatherIcon}"
             app:layout_constraintBottom_toBottomOf="@id/ivFlag"
             app:layout_constraintEnd_toStartOf="@+id/tvTemp"
             app:layout_constraintTop_toTopOf="@id/ivFlag" />
@@ -50,21 +63,23 @@
             android:textColor="@color/tvMidColor"
             android:textSize="14sp"
             android:textStyle="normal"
+            android:text="@{weather.weather.empty ? `` : weather.weather[0].main}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@id/ivWeather"
             app:layout_constraintStart_toStartOf="@id/ivWeather"
             app:layout_constraintTop_toBottomOf="@id/ivWeather" />
 
         <TextView
-            android:id="@+id/tvCountryName"
+            android:id="@+id/tvWeatherSubTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textColor="@color/tvMidColor"
             android:textSize="14sp"
             android:textStyle="normal"
-            app:layout_constraintEnd_toEndOf="@+id/tvLocation"
-            app:layout_constraintStart_toStartOf="@+id/tvLocation"
-            app:layout_constraintTop_toBottomOf="@+id/tvLocation" />
+            android:text="@{weather.subLocation}"
+            app:layout_constraintEnd_toEndOf="@+id/tvWeatherTitle"
+            app:layout_constraintStart_toStartOf="@+id/tvWeatherTitle"
+            app:layout_constraintTop_toBottomOf="@+id/tvWeatherTitle" />
 
         <TextView
             android:id="@+id/tvTemp"
@@ -74,6 +89,7 @@
             android:textColor="@color/black"
             android:textSize="22sp"
             android:textStyle="bold"
+            android:text="@{Math.round(weather.main.temp)+`°`}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -90,4 +106,6 @@
             android:background="@color/border"
             app:layout_constraintTop_toTopOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

@@ -10,11 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
 import com.zoho.globenow.data.local.entity.CountryEntity
-import com.zoho.globenow.data.model.LocationModel
 import com.zoho.globenow.databinding.CountryDetailFragmentBinding
 import com.zoho.globenow.databinding.WeatherLayoutBinding
 import com.zoho.globenow.util.svg.GlideUtil
-import kotlin.math.roundToInt
 
 class CountryDetailFragment : Fragment() {
 
@@ -23,7 +21,6 @@ class CountryDetailFragment : Fragment() {
     private var countryEntity: CountryEntity? = null
 
     private lateinit var binding: CountryDetailFragmentBinding
-    private lateinit var weatherBinding: WeatherLayoutBinding
 
     companion object {
         fun newInstance(countryEntity: CountryEntity): CountryDetailFragment {
@@ -42,42 +39,24 @@ class CountryDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = CountryDetailFragmentBinding.inflate(inflater, container, false)
-        weatherBinding = binding.weatherLayout2
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = viewLifecycleOwner
 
         countryEntity = arguments?.getParcelable("country")
-
         if (countryEntity == null) {
             countryEntity = savedInstanceState?.getParcelable("country")
         }
 
         countryEntity?.let { countryEntity ->
-            Log.d(TAG, "onCreateView: Country - $countryEntity")
+
+            if (countryEntity.lat != null && countryEntity.lng != null) {
+                viewModel.fetchCurrentWeather(countryEntity)
+            }
 
             details = arrayListOf()
             details.addAll(viewModel.getDetailsData(countryEntity))
-            val adapter = CountryDetailsAdapter(requireContext(), details)
+            val adapter = CountryDetailsAdapter(details)
             binding.rvCountryDetail.adapter = adapter
-
-            weatherBinding.tvLocation.text = countryEntity.name
-            GlideUtil.glideBuilder(requireContext()).load(Uri.parse(countryEntity.flag))
-                .into(weatherBinding.ivFlag)
-
-            if (countryEntity.lat != null && countryEntity.lng != null) {
-                viewModel.currentWeather(LocationModel(countryEntity.lat, countryEntity.lng))
-                    .observe(viewLifecycleOwner, { currentWeather ->
-                        currentWeather?.let { weather ->
-                            weatherBinding.tvCountryName.text = weather.name
-                            if (weather.weather.isNotEmpty()) {
-                                weatherBinding.tvWeatherStatus.text = weather.weather.first().main
-                            }
-                            val temperature = "${weather.main.temp.roundToInt()}\u00B0"
-                            weatherBinding.tvTemp.text = temperature
-                            Glide.with(requireActivity())
-                                .load(viewModel.getWeatherIcon(weather))
-                                .into(weatherBinding.ivWeather)
-                        }
-                    })
-            }
         }
         return binding.root
     }

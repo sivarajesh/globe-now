@@ -1,94 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/bgActivity"
-    tools:context=".ui.country.CountryListFragment">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <EditText
-        android:id="@+id/etSearch"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        android:background="@drawable/bg_edittext"
-        android:drawableStart="@drawable/ic_search"
-        android:drawablePadding="12dp"
-        android:ems="10"
-        android:hint="@string/label_search"
-        android:importantForAutofill="no"
-        android:inputType="textPersonName"
-        android:padding="12dp"
-        android:textColor="@color/black"
-        android:textColorHint="@color/etTextColor"
-        android:textSize="18sp"
-        android:textStyle="normal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/weatherLayout" />
+    <data>
 
-    <TextView
-        android:id="@+id/tvLableLocation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="10dp"
-        android:text="Current Location"
-        android:textColor="@color/tvLightColor"
-        android:textSize="14sp"
-        android:textStyle="normal"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <import type="android.view.View" />
 
-    <include android:id="@+id/weatherLayout"
-        layout="@layout/weather_layout"
+        <variable
+            name="viewModel"
+            type="com.zoho.globenow.ui.country.CountryViewModel" />
+
+        <variable
+            name="countryListAdapter"
+            type="com.zoho.globenow.ui.country.CountryListAdapter" />
+
+        <variable
+            name="onTextChangeListioner"
+            type="androidx.databinding.adapters.TextViewBindingAdapter.OnTextChanged" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/tvLableLocation"/>
+        android:layout_height="match_parent"
+        android:background="@color/bgActivity"
+        tools:context=".ui.country.CountryListFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvCountryList"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:visibility="gone"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etSearch"
-        tools:listitem="@layout/rv_country_list" />
-
-    <LinearLayout
-        android:id="@+id/no_data_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="@id/rvCountryList"
-        app:layout_constraintBottom_toBottomOf="@id/rvCountryList"
-        app:layout_constraintStart_toStartOf="@id/rvCountryList"
-        app:layout_constraintEnd_toEndOf="@id/rvCountryList">
-
-        <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/ic_no_data"
-            android:layout_gravity="center_horizontal"/>
+        <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:background="@drawable/bg_edittext"
+            android:drawableStart="@drawable/ic_search"
+            android:drawablePadding="12dp"
+            android:ems="10"
+            android:hint="@string/label_search"
+            android:importantForAutofill="no"
+            android:inputType="textPersonName"
+            android:onTextChanged="@{onTextChangeListioner}"
+            android:padding="12dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/etTextColor"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/weatherLayout" />
 
         <TextView
+            android:id="@+id/tvLableLocation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/no_data_label"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:text="Current Location"
             android:textColor="@color/tvLightColor"
-            android:textSize="25sp"/>
+            android:textSize="14sp"
+            android:textStyle="normal"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    </LinearLayout>
+        <include
+            android:id="@+id/weatherLayout"
+            layout="@layout/weather_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="@{viewModel.currentWeather != null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toBottomOf="@id/tvLableLocation"
+            app:weather="@{viewModel.currentWeather}" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCountryList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="12dp"
+            android:visibility="@{viewModel.isCountryListVisible ? View.VISIBLE : View.GONE}"
+            app:adapter="@{countryListAdapter}"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/etSearch"
+            tools:listitem="@layout/rv_country_list" />
 
+        <LinearLayout
+            android:id="@+id/no_data_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="@{viewModel.isCountryListVisible ? View.GONE : View.VISIBLE}"
+            app:layout_constraintBottom_toBottomOf="@id/rvCountryList"
+            app:layout_constraintEnd_toEndOf="@id/rvCountryList"
+            app:layout_constraintStart_toStartOf="@id/rvCountryList"
+            app:layout_constraintTop_toTopOf="@id/rvCountryList">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ic_no_data" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/no_data_label"
+                android:textColor="@color/tvLightColor"
+                android:textSize="25sp" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

@@ -1,22 +1,38 @@
 package com.zoho.globenow.ui.countrydetail
 
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.zoho.globenow.R
 import com.zoho.globenow.data.local.entity.CountryEntity
 import com.zoho.globenow.data.model.LocationModel
 import com.zoho.globenow.data.model.WeatherCondition
 import com.zoho.globenow.data.model.weather.Weather
 import com.zoho.globenow.data.repo.CountryRepo
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class CountryDetailViewModel @ViewModelInject constructor(private val countryRepo: CountryRepo) :
     ViewModel() {
 
-    fun currentWeather(locationModel: LocationModel): LiveData<Weather?> =
-        countryRepo.fetchWeatherReport(locationModel).asLiveData(viewModelScope.coroutineContext)
+    private val _currentWeather = MutableLiveData<Weather>()
+    val currentWeather: LiveData<Weather>
+        get() {
+            return _currentWeather
+        }
+
+    fun fetchCurrentWeather(country: CountryEntity) {
+        viewModelScope.launch {
+            countryRepo.fetchWeatherReport(LocationModel(country.lat!!, country.lng!!)).collect { weather ->
+                weather?.let {
+                    weather.mainLocation = country.name
+                    weather.weatherIcon = getWeatherIcon(weather)
+                    weather.subLocation = weather.name
+                    weather.countryFlagUrl = country.flag
+                    _currentWeather.value = weather
+                }
+            }
+        }
+    }
 
     fun getWeatherIcon(weather: Weather): Int {
         if (!weather.weather.isNullOrEmpty()) {

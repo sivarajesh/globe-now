@@ -2,6 +2,8 @@ package com.zoho.globenow.util.svg
 
 import android.content.Context
 import android.graphics.drawable.PictureDrawable
+import android.widget.ImageView
+import androidx.databinding.BindingAdapter
 import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 

@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 
 internal object RemoteClient {
-    val client: Retrofit
+    private val client: Retrofit
         get() {
             val interceptor = HttpLoggingInterceptor()
             interceptor.apply { interceptor.level = HttpLoggingInterceptor.Level.BODY }

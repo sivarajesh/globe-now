@@ -32,4 +32,9 @@ data class Weather(
     val weather: List<WeatherX> = listOf(),
     @SerializedName("wind")
     val wind: Wind = Wind()
-)
+) {
+    var weatherIcon: Int? = null
+    var mainLocation: String? = null
+    var subLocation: String? = null
+    var countryFlagUrl: String? = null
+}
