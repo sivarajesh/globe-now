@@ -13,7 +13,6 @@ import com.zoho.globenow.data.model.LocationModel
 import com.zoho.globenow.data.model.WeatherCondition
 import com.zoho.globenow.data.model.weather.Weather
 import com.zoho.globenow.data.repo.CountryRepo
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -86,17 +85,6 @@ class CountryViewModel @ViewModelInject constructor(private val countryRepo: Cou
                 Log.d(TAG, "setCurrentLocation: $weather")
             }
         }
-    }
-
-    fun applySearch(searchString: String, filteredCountries: ArrayList<CountryEntity>) {
-//        filteredCountries.clear()
-//        filteredCountries.addAll(countries.value!!.filter { countryEntity ->
-//            countryEntity.name.startsWith(searchString, true)
-//        })
-//        filteredCountries.addAll(countries.value!!.filter { countryEntity ->
-//            countryEntity.name.contains(" $searchString", true)
-//        })
-//        isCountryListVisible.value = filteredCountries.isNotEmpty()
     }
 
     companion object {

@@ -1,18 +1,13 @@
 package com.zoho.globenow.ui.countrydetail
 
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.bumptech.glide.Glide
 import com.zoho.globenow.data.local.entity.CountryEntity
 import com.zoho.globenow.databinding.CountryDetailFragmentBinding
-import com.zoho.globenow.databinding.WeatherLayoutBinding
-import com.zoho.globenow.util.svg.GlideUtil
 
 class CountryDetailFragment : Fragment() {
 

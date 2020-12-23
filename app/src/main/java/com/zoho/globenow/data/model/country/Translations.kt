@@ -17,7 +17,7 @@ data class Translations(
     @SerializedName("hr")
     val hr: String = "",
     @SerializedName("it")
-    val `it`: String = "",
+    val it: String = "",
     @SerializedName("ja")
     val ja: String = "",
     @SerializedName("nl")

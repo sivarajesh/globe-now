@@ -26,7 +26,6 @@ import com.zoho.globenow.GlobeApplication
 import com.zoho.globenow.R
 import com.zoho.globenow.data.local.entity.CountryEntity
 import com.zoho.globenow.data.model.LocationModel
-import com.zoho.globenow.data.model.weather.Weather
 import com.zoho.globenow.databinding.CountryListFragmentBinding
 import com.zoho.globenow.ui.countrydetail.CountryDetailFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,7 +41,6 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
     private lateinit var adapter: CountryListAdapter
     private val viewModel: CountryViewModel by activityViewModels()
     private var isGPSEnabled = false
-    private var currentWeather: Weather? = null
 
     //    FOR LOCATION
     @Inject
@@ -117,7 +115,7 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(Companion.REQUESTING_LOCATION_UPDATES_KEY, requestingLocationUpdates)
+        outState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, requestingLocationUpdates)
         super.onSaveInstanceState(outState)
     }
 
@@ -131,7 +129,7 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
         }
     }
 
-    fun checkLocationSettings() {
+    private fun checkLocationSettings() {
         val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
         task.addOnSuccessListener {
             isGPSEnabled = true
@@ -151,7 +149,7 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
                         0,
                         0,
                         null
-                    );
+                    )
                 } catch (sendEx: IntentSender.SendIntentException) {
                     // Ignore the error.
                 }
@@ -161,7 +159,7 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == Companion.REQUEST_CODE_LOCATION_SETTINGS) {
+        if (requestCode == REQUEST_CODE_LOCATION_SETTINGS) {
             if (resultCode == Activity.RESULT_OK) {
                 isGPSEnabled = true
                 invokeLocationAction()
@@ -175,7 +173,7 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == Companion.REQUEST_CODE_LOCATION_PERMISSION) {
+        if (requestCode == REQUEST_CODE_LOCATION_PERMISSION) {
             if (!grantResults.contains(PackageManager.PERMISSION_DENIED))
                 invokeLocationAction()
             else {
@@ -205,7 +203,7 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
                 .setPositiveButton("Ok") { dialogInterface, _ ->
                     requestPermissions(
                         arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                        Companion.REQUEST_CODE_LOCATION_PERMISSION
+                        REQUEST_CODE_LOCATION_PERMISSION
                     )
                     dialogInterface.dismiss()
                 }
@@ -284,7 +282,6 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
 
     companion object {
         fun newInstance() = CountryListFragment()
-        const val TAG = "CountryListFragment"
         const val REQUEST_CODE_LOCATION_PERMISSION = 1000
         const val REQUEST_CODE_LOCATION_SETTINGS = 2000
         const val REQUESTING_LOCATION_UPDATES_KEY: String = "requestingLocationUpdates"

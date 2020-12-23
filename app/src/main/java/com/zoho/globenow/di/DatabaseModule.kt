@@ -1,14 +1,9 @@
 package com.zoho.globenow.di
 
 import android.content.Context
-import android.graphics.drawable.PictureDrawable
 import androidx.room.Room
-import com.bumptech.glide.RequestBuilder
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.zoho.globenow.R
 import com.zoho.globenow.data.local.GlobeDB
 import com.zoho.globenow.data.local.dao.CountryDao
-import com.zoho.globenow.util.svg.SvgSoftwareLayerSetter
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -1,6 +1,5 @@
 package com.zoho.globenow.data.repo
 
-import androidx.lifecycle.LiveData
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -16,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class CountryRepo @Inject constructor(val db: GlobeDB): ApiHandler() {
+class CountryRepo @Inject constructor(db: GlobeDB): ApiHandler() {
     private val countryDao = db.countryDao()
 
     fun searchCountries(searchString: String): Flow<PagingData<CountryEntity>> {

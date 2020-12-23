@@ -34,7 +34,7 @@ class CountryDetailViewModel @ViewModelInject constructor(private val countryRep
         }
     }
 
-    fun getWeatherIcon(weather: Weather): Int {
+    private fun getWeatherIcon(weather: Weather): Int {
         if (!weather.weather.isNullOrEmpty()) {
             return when (weather.weather.first().main) {
                 WeatherCondition.Thunderstorm.name -> R.drawable.ic_thunder_storm
@@ -54,8 +54,8 @@ class CountryDetailViewModel @ViewModelInject constructor(private val countryRep
         val pairs = ArrayList<Pair<String, String>>()
         pairs.add(Pair("Population", countryEntity.population.toString()))
         pairs.add(Pair("Area", countryEntity.area.toString()))
-        pairs.add(Pair("Capital", countryEntity.capital.toString()))
-        pairs.add(Pair("Region", countryEntity.region.toString()))
+        pairs.add(Pair("Capital", countryEntity.capital))
+        pairs.add(Pair("Region", countryEntity.region))
         return pairs
     }
 }
