@@ -6,20 +6,25 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
 import com.zoho.globenow.R
 import com.zoho.globenow.data.local.entity.CountryEntity
 import com.zoho.globenow.data.model.LocationModel
 import com.zoho.globenow.data.model.WeatherCondition
 import com.zoho.globenow.data.model.weather.Weather
 import com.zoho.globenow.data.repo.CountryRepo
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class CountryViewModel @ViewModelInject constructor(private val countryRepo: CountryRepo) :
     ViewModel() {
 
-    val countries: LiveData<List<CountryEntity>> = countryRepo.getCountries()
-    val filteredCountries: LiveData<List<CountryEntity>> = MutableLiveData()
+    var currentSearchString = ""
+    fun countries(searchString: String): Flow<PagingData<CountryEntity>> =
+        countryRepo.searchCountries(searchString)
+
     private val _currentWeather = MutableLiveData<Weather>()
     val currentWeather: LiveData<Weather>
         get() {
@@ -30,7 +35,7 @@ class CountryViewModel @ViewModelInject constructor(private val countryRepo: Cou
         fetchCountries()
     }
 
-    val isCountryListVisible = MutableLiveData(false)
+    val isCountryListVisible = MutableLiveData(true)
 
     fun fetchCurrentWeather(locationModel: LocationModel) {
         viewModelScope.launch {
@@ -65,27 +70,36 @@ class CountryViewModel @ViewModelInject constructor(private val countryRepo: Cou
     }
 
     private fun setCurrentLocation() {
-        if (!countries.value.isNullOrEmpty()) {
-            currentWeather.value?.let {
-                val country =
-                    countries.value!!.first { countryEntity -> countryEntity.countryCode == it.sys.country }
-                it.mainLocation = it.name
-                it.subLocation = country.name
-                it.countryFlagUrl = country.flag
-                it.weatherIcon = getWeatherIcon(it)
-                _currentWeather.value = it
+        viewModelScope.launch {
+            currentWeather.value?.let { weather ->
+
+                val countries = countryRepo.getCountryByCode(weather.sys.country)
+                if (countries.isNotEmpty()) {
+                    val country = countries.first()
+                    weather.subLocation = country.name
+                    weather.countryFlagUrl = country.flag
+                    Log.d(TAG, "setCurrentLocation: $country")
+                }
+                weather.mainLocation = weather.name
+                weather.weatherIcon = getWeatherIcon(weather)
+                _currentWeather.value = weather
+                Log.d(TAG, "setCurrentLocation: $weather")
             }
         }
     }
 
     fun applySearch(searchString: String, filteredCountries: ArrayList<CountryEntity>) {
-        filteredCountries.clear()
-        filteredCountries.addAll(countries.value!!.filter { countryEntity ->
-            countryEntity.name.startsWith(searchString, true)
-        })
-        filteredCountries.addAll(countries.value!!.filter { countryEntity ->
-            countryEntity.name.contains(" $searchString", true)
-        })
-        isCountryListVisible.value = filteredCountries.isNotEmpty()
+//        filteredCountries.clear()
+//        filteredCountries.addAll(countries.value!!.filter { countryEntity ->
+//            countryEntity.name.startsWith(searchString, true)
+//        })
+//        filteredCountries.addAll(countries.value!!.filter { countryEntity ->
+//            countryEntity.name.contains(" $searchString", true)
+//        })
+//        isCountryListVisible.value = filteredCountries.isNotEmpty()
+    }
+
+    companion object {
+        private const val TAG = "CountryViewModel"
     }
 }

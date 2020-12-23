@@ -18,6 +18,7 @@ import androidx.databinding.adapters.TextViewBindingAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
@@ -29,13 +30,14 @@ import com.zoho.globenow.data.model.weather.Weather
 import com.zoho.globenow.databinding.CountryListFragmentBinding
 import com.zoho.globenow.ui.countrydetail.CountryDetailFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionListener {
 
-    private var isLocationPermissionDenied: Boolean = false
     private lateinit var filteredCountries: ArrayList<CountryEntity>
     private lateinit var adapter: CountryListAdapter
     private val viewModel: CountryViewModel by activityViewModels()
@@ -45,10 +47,13 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
     //    FOR LOCATION
     @Inject
     lateinit var fusedLocationClient: FusedLocationProviderClient
+
     @Inject
     lateinit var builder: LocationSettingsRequest.Builder
+
     @Inject
     lateinit var client: SettingsClient
+
     @Inject
     lateinit var locationRequest: LocationRequest
     private var requestingLocationUpdates: Boolean = false
@@ -63,25 +68,30 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
         binding = CountryListFragmentBinding.inflate(inflater, container, false)
         updateValuesFromBundle(savedInstanceState)
         filteredCountries = arrayListOf()
-        adapter = CountryListAdapter(filteredCountries, this)
+        adapter = CountryListAdapter(this)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
         binding.countryListAdapter = adapter
         binding.onTextChangeListioner = onTextChangeListioner
 
-        viewModel.countries.observe(viewLifecycleOwner, {
-            viewModel.applySearch(binding.etSearch.text.toString().trim(), filteredCountries)
-            adapter.notifyDataSetChanged()
-        })
+        updateRecyclerView(viewModel.currentSearchString)
 
         return binding.root
     }
 
     private val onTextChangeListioner =
         TextViewBindingAdapter.OnTextChanged { s, _, _, _ ->
-            viewModel.applySearch(s.toString(), filteredCountries)
-            adapter.notifyDataSetChanged()
+            viewModel.currentSearchString = s.toString()
+            updateRecyclerView(viewModel.currentSearchString)
         }
+
+    private fun updateRecyclerView(searchString: String) {
+        lifecycleScope.launch {
+            viewModel.countries(searchString).collectLatest { countries ->
+                adapter.submitData(countries)
+            }
+        }
+    }
 
     override fun onCountrySelected(countryEntity: CountryEntity) {
         requireActivity().supportFragmentManager.beginTransaction()
@@ -133,10 +143,15 @@ class CountryListFragment : Fragment(), CountryListAdapter.OnCountrySelectionLis
                 try {
                     // Show the dialog by calling startResolutionForResult(),
                     // and check the result in onActivityResult().
-                    exception.startResolutionForResult(
-                        requireActivity(),
-                        REQUEST_CODE_LOCATION_SETTINGS
-                    )
+                    startIntentSenderForResult(
+                        exception.resolution.intentSender,
+                        REQUEST_CODE_LOCATION_SETTINGS,
+                        null,
+                        0,
+                        0,
+                        0,
+                        null
+                    );
                 } catch (sendEx: IntentSender.SendIntentException) {
                     // Ignore the error.
                 }
